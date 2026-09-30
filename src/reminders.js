@@ -1,6 +1,6 @@
 import { profileName, pushText, reminderText, replyText } from './line.js';
 
-const WEEK = 7 * 86400e3;
+const WEEK_MINUTES = 7 * 24 * 60;
 
 // ---------- 聯絡人 ----------
 
@@ -116,7 +116,7 @@ export async function runSchedule(env, now = Date.now()) {
   }
 
   await env.DB.prepare("DELETE FROM reminders WHERE status IN ('sent', 'failed', 'cancelled') AND sent_at < ?")
-    .bind(now - WEEK)
+    .bind(now - (Number(env.KEEP_SENT_MINUTES) || WEEK_MINUTES) * 60e3)
     .run();
 }
 

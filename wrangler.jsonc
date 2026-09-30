@@ -16,5 +16,6 @@
   ],
   // 每分鐘檢查一次有沒有提醒該送出
   "triggers": { "crons": ["* * * * *"] },
-  "vars": { "TIMEZONE": "Asia/Taipei" }
+  // 已送出的提醒保留多久（分鐘），10080 = 一星期；測試時可暫時改成 2
+  "vars": { "KEEP_SENT_MINUTES": "10080" }
 }
