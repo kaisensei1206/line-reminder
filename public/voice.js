@@ -9,7 +9,8 @@ const toBase64 = (buf) => {
 };
 
 export class VoiceChat {
-  constructor({ onState, onCreated, onError }) {
+  constructor({ onState, onCreated, onError, onCaption }) {
+    this.onCaption = onCaption || (() => {});
     this.onState = onState;
     this.onCreated = onCreated;
     this.onError = onError;
@@ -80,6 +81,10 @@ export class VoiceChat {
     const sc = msg.serverContent;
     if (sc) {
       if (sc.interrupted) this.stopPlayback();
+      // 字幕：顯示 AI 說的話與它聽到的話，方便確認有沒有聽錯
+      if (sc.inputTranscription?.text) this.onCaption('you', sc.inputTranscription.text);
+      if (sc.outputTranscription?.text) this.onCaption('ai', sc.outputTranscription.text);
+      if (sc.turnComplete) this.onCaption('turn');
       for (const part of sc.modelTurn?.parts || []) {
         if (part.inlineData?.data) this.play(part.inlineData.data);
       }
@@ -96,7 +101,9 @@ export class VoiceChat {
             body: JSON.stringify(call.args || {}),
           });
           result = await r.json().catch(() => ({ ok: false, reason: '系統發生錯誤' }));
+          if (!r.ok && !result.reason) result = { ok: false, reason: result.error || '系統發生錯誤' };
           if (result.ok) this.onCreated();
+          this.onCaption('tool', result.ok ? '✓ 已建立提醒' : `✗ 沒有建立：${result.reason}`);
         } else {
           result = { ok: false, reason: '不支援的動作' };
         }

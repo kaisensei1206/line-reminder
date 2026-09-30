@@ -95,6 +95,7 @@ export async function voiceSession(env, now = Date.now()) {
     generationConfig: { responseModalities: ['AUDIO'] },
     systemInstruction: { parts: [{ text: systemInstruction(now, contacts) }] },
     tools,
+    inputAudioTranscription: {},
     outputAudioTranscription: {},
   };
   // 先用 v1beta，不行再試 v1alpha（Google 兩個版本都有提供一次性通行證）
@@ -107,8 +108,9 @@ export async function voiceSession(env, now = Date.now()) {
         uses: 1,
         expireTime: new Date(now + 30 * 60e3).toISOString(),
         newSessionExpireTime: new Date(now + 2 * 60e3).toISOString(),
-        // 通行證只能用在這個模型、只能用語音回答
-        bidiGenerateContentSetup: { model: setup.model, generationConfig: { responseModalities: ['AUDIO'] } },
+        // 整份設定（說話規則、建立提醒的工具）都鎖在通行證裡。
+        // 只要通行證帶了設定，瀏覽器另外送的設定就會被忽略，所以一定要放完整。
+        bidiGenerateContentSetup: setup,
       }),
     });
     if (res.ok) {

@@ -181,6 +181,23 @@ const voice = new VoiceChat({
     $('mic-hint').textContent = HINTS[state];
   },
   onCreated: () => refresh(),
+  onCaption(who, text) {
+    const box = $('captions');
+    if (who === 'turn') {
+      box.dataset.last = '';
+      return;
+    }
+    // 同一段話會分好幾次傳來，接在同一個泡泡後面
+    let p = box.lastElementChild;
+    if (!p || box.dataset.last !== who || who === 'tool') {
+      p = document.createElement('p');
+      p.className = who;
+      box.append(p);
+      while (box.children.length > 4) box.firstElementChild.remove();
+    }
+    p.textContent += text;
+    box.dataset.last = who;
+  },
   onError(message) {
     $('mic-hint').textContent = message;
   },
@@ -188,7 +205,10 @@ const voice = new VoiceChat({
 
 $('mic').addEventListener('click', () => {
   if (voice.active) voice.stop();
-  else voice.start();
+  else {
+    $('captions').innerHTML = '';
+    voice.start();
+  }
 });
 
 setInterval(() => !$('home').hidden && refresh(), 30e3);
