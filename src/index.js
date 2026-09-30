@@ -1,3 +1,4 @@
+import { ensureSchema } from './db.js';
 import { checkPassword, clearSessionCookie, isLoggedIn, makeSessionCookie } from './auth.js';
 
 const json = (data, init = {}) =>
@@ -8,6 +9,7 @@ const json = (data, init = {}) =>
 
 async function handleApi(request, env, url) {
   const { pathname } = url;
+  await ensureSchema(env);
 
   if (pathname === '/api/login' && request.method === 'POST') {
     const { password } = await request.json().catch(() => ({}));
@@ -44,6 +46,7 @@ export default {
   },
 
   async scheduled(controller, env, ctx) {
+    await ensureSchema(env);
     // 第二階段會在這裡檢查並送出到期的提醒
   },
 };

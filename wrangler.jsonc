@@ -11,8 +11,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "line-reminder",
-      "migrations_dir": "migrations"
+      "database_name": "line-reminder"
     }
   ],
   // 每分鐘檢查一次有沒有提醒該送出
