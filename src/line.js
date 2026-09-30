@@ -6,7 +6,7 @@ async function lineFetch(env, path, init = {}) {
   const res = await fetch(API + path, {
     ...init,
     headers: {
-      Authorization: `Bearer ${env.LINE_CHANNEL_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${String(env.LINE_CHANNEL_ACCESS_TOKEN || "").trim()}`,
       ...(init.body ? { 'Content-Type': 'application/json' } : {}),
       ...init.headers,
     },
@@ -25,7 +25,7 @@ export async function verifySignature(env, body, signature) {
   if (!env.LINE_CHANNEL_SECRET || !signature) return false;
   const key = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(env.LINE_CHANNEL_SECRET),
+    new TextEncoder().encode(env.LINE_CHANNEL_SECRET.trim()),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['verify']
