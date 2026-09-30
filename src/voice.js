@@ -4,7 +4,7 @@
 import { createReminder, listContacts, UserError } from './reminders.js';
 
 export const MODEL = 'gemini-3.8-live';
-const API = 'https://generativelanguage.googleapis.com/v1beta';
+const API_ROOT = 'https://generativelanguage.googleapis.com';
 const TAIPEI = 8 * 3600e3; // 台灣時間 = UTC+8，沒有日光節約
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
@@ -97,23 +97,36 @@ export async function voiceSession(env, now = Date.now()) {
     tools,
     outputAudioTranscription: {},
   };
-  const res = await fetch(`${API}/auth_tokens`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-    body: JSON.stringify({
-      uses: 1,
-      expireTime: new Date(now + 30 * 60e3).toISOString(),
-      newSessionExpireTime: new Date(now + 2 * 60e3).toISOString(),
-      liveConnectConstraints: { model: setup.model, config: { responseModalities: ['AUDIO'] } },
-    }),
-  });
-  if (!res.ok) {
-    console.error('Gemini token', res.status, await res.text().catch(() => ''));
-    throw new UserError(res.status === 400 || res.status === 403 ? 'Gemini 金鑰不正確' : '暫時連不上 Gemini，請稍後再試');
+  // 先用 v1beta，不行再試 v1alpha（Google 兩個版本都有提供一次性通行證）
+  let version, name, lastError;
+  for (const v of ['v1beta', 'v1alpha']) {
+    const res = await fetch(`${API_ROOT}/${v}/auth_tokens`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY.trim() },
+      body: JSON.stringify({
+        uses: 1,
+        expireTime: new Date(now + 30 * 60e3).toISOString(),
+        newSessionExpireTime: new Date(now + 2 * 60e3).toISOString(),
+        // 通行證只能用在這個模型、只能用語音回答
+        bidiGenerateContentSetup: { model: setup.model, generationConfig: { responseModalities: ['AUDIO'] } },
+      }),
+    });
+    if (res.ok) {
+      ({ name } = await res.json());
+      version = v;
+      break;
+    }
+    const detail = await res.json().catch(() => ({}));
+    lastError = { status: res.status, message: detail.error?.message || '' };
+    console.error('Gemini token', v, res.status, JSON.stringify(detail));
+    if (/API key not valid|API_KEY_INVALID/i.test(lastError.message)) break;
   }
-  const { name } = await res.json();
+  if (!name) {
+    if (/API key not valid|API_KEY_INVALID/i.test(lastError.message)) throw new UserError('Gemini 金鑰不正確，請檢查是否完整複製');
+    throw new UserError(`暫時無法開始語音（Google 回應 ${lastError.status}：${lastError.message.slice(0, 120)}）`);
+  }
   return {
-    url: `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(name)}`,
+    url: `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${version}.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(name)}`,
     setup,
   };
 }
