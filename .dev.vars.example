@@ -1,0 +1,2 @@
+# 本機測試用。複製成 .dev.vars 再填入（.dev.vars 不會被存檔）
+APP_PASSWORD=請改成你的密碼

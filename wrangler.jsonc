@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "line-reminder",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "line-reminder",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // 每分鐘檢查一次有沒有提醒該送出
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": { "TIMEZONE": "Asia/Taipei" }
+}
