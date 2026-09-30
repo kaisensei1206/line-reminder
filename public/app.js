@@ -1,3 +1,5 @@
+import { VoiceChat } from './voice.js';
+
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
@@ -163,8 +165,30 @@ document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('cli
   refresh();
 }));
 
+// ---------- 語音 ----------
+
+const HINTS = {
+  idle: '點一下麥克風，開始說你想提醒的事',
+  connecting: '連線中…',
+  listening: '請說，我在聽（再按一次結束）',
+  speaking: 'AI 說話中…（再按一次結束）',
+};
+
+const voice = new VoiceChat({
+  onState(state) {
+    $('mic').classList.toggle('live', state !== 'idle');
+    $('mic').setAttribute('aria-label', state === 'idle' ? '開始對話' : '結束對話');
+    $('mic-hint').textContent = HINTS[state];
+  },
+  onCreated: () => refresh(),
+  onError(message) {
+    $('mic-hint').textContent = message;
+  },
+});
+
 $('mic').addEventListener('click', () => {
-  $('mic-hint').textContent = '語音功能會在第三階段加入';
+  if (voice.active) voice.stop();
+  else voice.start();
 });
 
 setInterval(() => !$('home').hidden && refresh(), 30e3);

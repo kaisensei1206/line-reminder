@@ -1,6 +1,7 @@
 import { ensureSchema } from './db.js';
 import { checkPassword, clearSessionCookie, isLoggedIn, makeSessionCookie } from './auth.js';
 import { quota, verifySignature } from './line.js';
+import { createFromVoice, voiceSession } from './voice.js';
 import {
   UserError,
   cancelReminder,
@@ -51,7 +52,7 @@ async function handleApi(request, env, url, ctx) {
   // 以下都要先登入
   if (!(await isLoggedIn(request, env))) return json({ error: '請先登入' }, { status: 401 });
 
-  if (pathname === '/api/me') return json({ ok: true, lineReady: Boolean(env.LINE_CHANNEL_ACCESS_TOKEN) });
+  if (pathname === '/api/me') return json({ ok: true, lineReady: Boolean(env.LINE_CHANNEL_ACCESS_TOKEN), voiceReady: Boolean(env.GEMINI_API_KEY) });
 
   if (pathname === '/api/reminders' && method === 'GET') return json(await listReminders(env));
   if (pathname === '/api/reminders' && method === 'POST') {
@@ -72,7 +73,13 @@ async function handleApi(request, env, url, ctx) {
     return json({ ok: true });
   }
 
-  if (pathname === '/api/quota') return json(await quota(env));
+  if (pathname === '/api/quota') {
+    if (!env.LINE_CHANNEL_ACCESS_TOKEN) return json({});
+    return json(await quota(env).catch((err) => (console.error(err), {})));
+  }
+
+  if (pathname === '/api/voice/session' && method === 'POST') return json(await voiceSession(env));
+  if (pathname === '/api/voice/create' && method === 'POST') return json(await createFromVoice(env, await body(request)));
 
   return json({ error: '找不到' }, { status: 404 });
 }
