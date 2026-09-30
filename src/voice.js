@@ -157,6 +157,11 @@ export async function createFromVoice(env, { content, recipient, datetime }) {
     };
   }
   const sendAt = parseTaipei(datetime);
+  // AI 偶爾會對同一件事呼叫兩次，一樣的內容就不重複建立
+  const dup = await env.DB.prepare(
+    "SELECT id FROM reminders WHERE content = ? AND contact_id = ? AND send_at = ? AND status != 'cancelled' AND created_at > ?"
+  ).bind(String(content || '').trim(), contact.id, sendAt, Date.now() - 10 * 60e3).first();
+  if (dup) return { ok: true, id: dup.id };
   try {
     const id = await createReminder(env, { content, contactId: contact.id, sendAt });
     return { ok: true, id };

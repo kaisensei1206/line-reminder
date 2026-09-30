@@ -90,29 +90,42 @@ export class VoiceChat {
       }
     }
 
-    if (msg.toolCall) {
-      const responses = [];
-      for (const call of msg.toolCall.functionCalls || []) {
-        let result;
-        if (call.name === 'create_reminder') {
-          const r = await fetch('/api/voice/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(call.args || {}),
-          });
-          result = await r.json().catch(() => ({ ok: false, reason: '系統發生錯誤' }));
-          if (!r.ok && !result.reason) result = { ok: false, reason: result.error || '系統發生錯誤' };
-          if (result.ok) this.onCreated();
-          this.onCaption('tool', result.ok ? '✓ 已建立提醒' : `✗ 沒有建立：${result.reason}`);
-        } else {
-          result = { ok: false, reason: '不支援的動作' };
-        }
-        responses.push({ id: call.id, name: call.name, response: result });
-      }
-      this.ws.send(JSON.stringify({ toolResponse: { functionResponses: responses } }));
-    }
+    // AI 要求建立提醒：一般放在 toolCall，有些版本會夾在說話內容裡
+    const calls = [
+      ...(msg.toolCall?.functionCalls || []),
+      ...(sc?.modelTurn?.parts || []).filter((p) => p.functionCall).map((p) => p.functionCall),
+    ];
+    if (calls.length) await this.runTools(calls);
 
     if (msg.goAway) this.fail('對話時間到了，請再按一次麥克風');
+  }
+
+  async runTools(calls) {
+    this.handled ??= new Set();
+    const responses = [];
+    for (const call of calls) {
+      if (call.id && this.handled.has(call.id)) continue;
+      if (call.id) this.handled.add(call.id);
+      let result;
+      if (call.name === 'create_reminder') {
+        this.onCaption('tool', '…正在建立提醒');
+        const r = await fetch('/api/voice/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(call.args || {}),
+        });
+        result = await r.json().catch(() => ({ ok: false, reason: '系統發生錯誤' }));
+        if (!r.ok && !result.reason) result = { ok: false, reason: result.error || '系統發生錯誤' };
+        if (result.ok) this.onCreated();
+        this.onCaption('tool', result.ok ? '✓ 已建立提醒' : `✗ 沒有建立：${result.reason}`);
+      } else {
+        result = { ok: false, reason: '不支援的動作' };
+      }
+      responses.push({ id: call.id, name: call.name, response: result });
+    }
+    if (responses.length && this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ toolResponse: { functionResponses: responses } }));
+    }
   }
 
   play(b64) {

@@ -193,7 +193,7 @@ const voice = new VoiceChat({
       p = document.createElement('p');
       p.className = who;
       box.append(p);
-      while (box.children.length > 4) box.firstElementChild.remove();
+      while (box.children.length > 12) box.firstElementChild.remove();
     }
     p.textContent += text;
     box.dataset.last = who;
