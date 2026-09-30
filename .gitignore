@@ -1,0 +1,25 @@
+# 排除清單：這些檔案不會被存進版本紀錄，也不會上傳到 GitHub
+
+# 金鑰、密碼、環境設定
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+*.key
+*.pem
+*.p12
+*secret*
+*credential*
+service-account*.json
+
+# 自動產生的檔案
+node_modules/
+.wrangler/
+dist/
+.cache/
+
+# 系統檔案
+.DS_Store
+Thumbs.db
+*.log
