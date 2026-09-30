@@ -117,3 +117,65 @@ input:focus { border-color: var(--accent); }
 .hint { color: var(--quiet); margin: 0; text-align: center; font-size: 15px; }
 
 .list { display: flex; flex-direction: column; gap: 10px; }
+
+nav { display: flex; gap: 4px; }
+.chip {
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+.quota { color: var(--quiet); font-size: 13px; text-align: center; margin: 0 0 12px; min-height: 1em; }
+
+/* 提醒清單 */
+.list h3 { font-size: 13px; font-weight: 600; color: var(--quiet); margin: 16px 4px 4px; letter-spacing: 0.04em; }
+.item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.item .body { flex: 1; min-width: 0; }
+.item .what { font-size: 16px; overflow-wrap: anywhere; }
+.item .meta { font-size: 13px; color: var(--quiet); margin-top: 4px; }
+.badge { font-size: 12px; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.badge.sent { background: var(--accent-soft); color: var(--ink); }
+.badge.failed { background: rgba(179, 38, 30, 0.14); color: var(--danger); }
+.item.done { opacity: 0.75; }
+.empty { color: var(--quiet); text-align: center; font-size: 14px; padding: 16px; }
+
+/* 彈出視窗 */
+.sheet {
+  border: 0;
+  border-radius: 20px;
+  padding: 24px;
+  width: min(92vw, 440px);
+  background: var(--card);
+  color: var(--ink);
+}
+.sheet::backdrop { background: rgba(0, 0, 0, 0.35); }
+.sheet h2 { font-size: 19px; margin: 0 0 16px; }
+.sheet form, .sheet > div { display: flex; flex-direction: column; gap: 14px; }
+.sheet label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--quiet); }
+select {
+  font: inherit; font-size: 17px; padding: 13px 14px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.row { display: flex; gap: 10px; justify-content: flex-end; }
+.row .primary { padding: 12px 20px; }
+.ghost { background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 12px; padding: 12px 18px; }
+.hint.left { text-align: left; font-size: 14px; }
+.contacts { display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow: auto; }
+.contact { border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.contact .name { font-size: 13px; color: var(--quiet); }
+.contact .line { display: flex; gap: 8px; align-items: center; }
+.contact input[type=text] { flex: 1; min-width: 0; padding: 10px 12px; font-size: 16px; }
+.contact .self { font-size: 14px; display: flex; gap: 6px; align-items: center; color: var(--ink); }
+.small { padding: 10px 14px; font-size: 15px; border-radius: 10px; }
+.sheet label.self { flex-direction: row; }
+input[type=radio] { accent-color: var(--accent); width: 18px; height: 18px; }

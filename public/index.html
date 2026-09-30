@@ -27,7 +27,10 @@
   <main id="home" class="view" hidden>
     <header class="top">
       <span class="brand">提醒幫手</span>
-      <button id="logout" class="text">登出</button>
+      <nav>
+        <button id="open-contacts" class="text">聯絡人</button>
+        <button id="logout" class="text">登出</button>
+      </nav>
     </header>
 
     <section class="center">
@@ -35,10 +38,37 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z"/></svg>
       </button>
       <p id="mic-hint" class="hint">點一下麥克風，開始說你想提醒的事</p>
+      <button id="open-type" class="chip">改用打字</button>
     </section>
 
+    <p id="quota" class="quota"></p>
     <section id="list" class="list"></section>
   </main>
+
+  <dialog id="type-dialog" class="sheet">
+    <form id="type-form" method="dialog">
+      <h2>新增提醒</h2>
+      <label>提醒什麼<input id="t-content" required maxlength="500" placeholder="例如：去蝦皮店到店取貨"></label>
+      <label>提醒誰<select id="t-contact" required></select></label>
+      <label>什麼時候<input id="t-time" type="datetime-local" required></label>
+      <p id="t-msg" class="msg" role="alert"></p>
+      <div class="row">
+        <button type="button" class="ghost" data-close>取消</button>
+        <button type="submit" class="primary">建立提醒</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="contacts-dialog" class="sheet">
+    <div>
+      <h2>聯絡人</h2>
+      <p class="hint left">想收到提醒的人，要先加 LINE 官方帳號「冷靜小羊的提醒幫手」為好友，才會出現在這裡。幫他們取個小名，說話時就能用小名指定。</p>
+      <div id="contacts" class="contacts"></div>
+      <div class="row">
+        <button type="button" class="primary" data-close>完成</button>
+      </div>
+    </div>
+  </dialog>
 
   <script src="/app.js" type="module"></script>
 </body>
